@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { getSession, submitArgument, getJudgement, submitAppeal, inviteUser, updateUsername } from '../../utils/api';
-import ArgumentForm from '../../components/ArgumentForm';
-import ArgumentList from '../../components/ArgumentList';
-import ChatBox from '../../components/ChatBox';
-import InviteForm from '../../components/InviteForm';
-import Judgement from '../../components/Judgement';
-import AppealForm from '../../components/AppealForm';
-import UsernameForm from '../../components/UsernameForm';
+import { getSession, submitArgument, getJudgement, submitAppeal, inviteUser, updateUsername } from '../../../../utils/api';
+import ArgumentForm from '../../../../components/ArgumentForm';
+import ArgumentList from '../../../../components/ArgumentList';
+import ChatBox from '../../../../components/ChatBox';
+import InviteForm from '../../../../components/InviteForm';
+import Judgement from '../../../../components/Judgement';
+import AppealForm from '../../../../components/AppealForm';
+import UsernameForm from '../../../../components/UsernameForm';
 
 export default function Session() {
   const router = useRouter();

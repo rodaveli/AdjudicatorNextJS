@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { createSession } from '../utils/api';
+import { createSession } from '../../../utils/api';
 
 export default function Home() {
   const router = useRouter();

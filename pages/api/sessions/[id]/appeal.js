@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { get_ai_judgement } from '../../../utils/ai_judge';
+import { get_ai_judgement } from '../../../../utils/ai_judge';
 
 const prisma = new PrismaClient();
 
