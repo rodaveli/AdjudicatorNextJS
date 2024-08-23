@@ -40,7 +40,7 @@ export default function Home() {
           <h2>Create New Session</h2>
           <form onSubmit={handleCreateSession}>
             <div>
-              const searchParams = useSearchParams(); 
+            {/* const searchParams = useSearchParams();  */}
               <label htmlFor="sessionName">Session Name:</label>
               <input
                 id="sessionName"

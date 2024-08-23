@@ -1,7 +1,5 @@
-const API_URL = 'http://localhost:8000'; // Replace with your backend URL
-
 export const createSession = async (name, description) => {
-  const response = await fetch(`${API_URL}/sessions/`, {
+  const response = await fetch(`/api/sessions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -13,7 +11,7 @@ export const createSession = async (name, description) => {
 
 export const getSession = async (id) => {
   const userId = localStorage.getItem('userId');
-  const response = await fetch(`${API_URL}/sessions/${id}?userId=${userId}`);
+  const response = await fetch(`/api/sessions/${id}?userId=${userId}`);
   return response.json();
 };
 
@@ -24,7 +22,7 @@ export const submitArgument = async (sessionId, content, imageFile) => {
     formData.append('image', imageFile);
   }
   const userId = localStorage.getItem('userId');
-  const response = await fetch(`${API_URL}/sessions/${sessionId}/arguments/?userId=${userId}`, {
+  const response = await fetch(`/api/sessions/${sessionId}/arguments/?userId=${userId}`, {
     method: 'POST',
     body: formData,
   });
@@ -32,13 +30,13 @@ export const submitArgument = async (sessionId, content, imageFile) => {
 };
 
 export const getJudgement = async (sessionId) => {
-  const response = await fetch(`${API_URL}/sessions/${sessionId}/judge/`);
+  const response = await fetch(`/api/sessions/${sessionId}/judge/`);
   return response.json();
 };
 
 export const submitAppeal = async (sessionId, content) => {
   const userId = localStorage.getItem('userId');
-  const response = await fetch(`${API_URL}/sessions/${sessionId}/appeal/`, {
+  const response = await fetch(`/api/sessions/${sessionId}/appeal/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -50,7 +48,7 @@ export const submitAppeal = async (sessionId, content) => {
 
 export const inviteUser = async (sessionId, email) => {
   const userId = localStorage.getItem('userId');
-  const response = await fetch(`${API_URL}/sessions/${sessionId}/invite/`, {
+  const response = await fetch(`/api/sessions/${sessionId}/invite/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -62,7 +60,7 @@ export const inviteUser = async (sessionId, email) => {
 
 export const updateUsername = async (sessionId, user, username) => {
   const userId = localStorage.getItem('userId');
-  const response = await fetch(`${API_URL}/sessions/${sessionId}/update_username`, {
+  const response = await fetch(`/api/sessions/${sessionId}/update_username`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
