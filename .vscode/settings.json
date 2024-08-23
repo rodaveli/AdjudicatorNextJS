@@ -1,6 +1,6 @@
 {
     "cursor.general.enableShadowWorkspace": true,
     "cursor.chat.smoothStreaming": true,
-    "cursor.chat.alwaysSearchWeb": true,
+    "cursor.chat.alwaysSearchWeb": false,
     "cursor.aipreview.enabled": true
 }
