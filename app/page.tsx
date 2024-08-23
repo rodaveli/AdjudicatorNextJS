@@ -7,7 +7,6 @@ import { FormEvent, Suspense } from 'react';
 
 export default function Home() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [sessionName, setSessionName] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
   const [joinSessionId, setJoinSessionId] = useState('');
@@ -41,6 +40,7 @@ export default function Home() {
           <h2>Create New Session</h2>
           <form onSubmit={handleCreateSession}>
             <div>
+              const searchParams = useSearchParams(); 
               <label htmlFor="sessionName">Session Name:</label>
               <input
                 id="sessionName"
