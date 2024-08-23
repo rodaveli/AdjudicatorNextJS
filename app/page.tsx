@@ -1,12 +1,12 @@
-"use client"; 
+"use client";
 
 import { useState } from 'react';
-import { usePathname, useSearchParams, redirect } from 'next/navigation'; 
+import { usePathname, useSearchParams, redirect } from 'next/navigation';
 import { createSession } from '../utils/api';
-import { FormEvent } from 'react'; 
+import { FormEvent, Suspense } from 'react';
 
 export default function Home() {
-  const pathname = usePathname(); 
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [sessionName, setSessionName] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
@@ -34,33 +34,49 @@ export default function Home() {
 
   return (
     <main>
-      <h1>Welcome to AI Debate Judge</h1>
+      <Suspense fallback={<div>Loading...</div>}> {/* Wrap in Suspense */}
+        <h1>Welcome to AI Debate Judge</h1>
 
-      <section>
-        <h2>Create New Session</h2>
-        <form onSubmit={handleCreateSession}>
-          <div>
-            <label htmlFor="sessionName">Session Name:</label>
-            <input id="sessionName" value={sessionName} onChange={(e) => setSessionName(e.target.value)} required />
-          </div>
-          <div>
-            <label htmlFor="sessionDescription">Description:</label>
-            <textarea id="sessionDescription" value={sessionDescription} onChange={(e) => setSessionDescription(e.target.value)} />
-          </div>
-          <button type="submit">Create Session</button>
-        </form>
-      </section>
+        <section>
+          <h2>Create New Session</h2>
+          <form onSubmit={handleCreateSession}>
+            <div>
+              <label htmlFor="sessionName">Session Name:</label>
+              <input
+                id="sessionName"
+                value={sessionName}
+                onChange={(e) => setSessionName(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="sessionDescription">Description:</label>
+              <textarea
+                id="sessionDescription"
+                value={sessionDescription}
+                onChange={(e) => setSessionDescription(e.target.value)}
+              />
+            </div>
+            <button type="submit">Create Session</button>
+          </form>
+        </section>
 
-      <section>
-        <h2>Join Existing Session</h2>
-        <form onSubmit={handleJoinSession}>
-          <div>
-            <label htmlFor="joinSessionId">Session ID:</label>
-            <input id="joinSessionId" value={joinSessionId} onChange={(e) => setJoinSessionId(e.target.value)} required />
-          </div>
-          <button type="submit">Join Session</button>
-        </form>
-      </section>
+        <section>
+          <h2>Join Existing Session</h2>
+          <form onSubmit={handleJoinSession}>
+            <div>
+              <label htmlFor="joinSessionId">Session ID:</label>
+              <input
+                id="joinSessionId"
+                value={joinSessionId}
+                onChange={(e) => setJoinSessionId(e.target.value)}
+                required
+              />
+            </div>
+            <button type="submit">Join Session</button>
+          </form>
+        </section>
+      </Suspense>
     </main>
   );
 }
