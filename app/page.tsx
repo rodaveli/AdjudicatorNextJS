@@ -1,10 +1,13 @@
+"use client"; 
+
 import { useState } from 'react';
-import { useRouter } from 'next/router';
+import { usePathname, useSearchParams, redirect } from 'next/navigation'; 
 import { createSession } from '../utils/api';
 import { FormEvent } from 'react'; 
 
 export default function Home() {
-  const router = useRouter();
+  const pathname = usePathname(); 
+  const searchParams = useSearchParams();
   const [sessionName, setSessionName] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
   const [joinSessionId, setJoinSessionId] = useState('');
@@ -13,7 +16,7 @@ export default function Home() {
     event.preventDefault();
     try {
       const newSession = await createSession(sessionName, sessionDescription);
-      router.push(`/session/${newSession.id}`);
+      redirect(`/session/${newSession.id}`);
     } catch (error) {
       console.error('Error creating session:', error);
       alert('Failed to create session. Please try again.');
@@ -23,7 +26,7 @@ export default function Home() {
   const handleJoinSession = (event: FormEvent) => {
     event.preventDefault();
     if (joinSessionId) {
-      router.push(`/session/${joinSessionId}`);
+      redirect(`/session/${joinSessionId}`);
     } else {
       alert('Please enter a valid session ID.');
     }
