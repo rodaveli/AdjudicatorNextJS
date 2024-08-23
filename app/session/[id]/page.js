@@ -1,7 +1,6 @@
 "use client"; 
 
 import { useState, useEffect } from 'react';
-import { useState, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { getSession, submitArgument, getJudgement, submitAppeal, inviteUser, updateUsername } from '../../../../utils/api';
 import ArgumentForm from '../../../../../components/ArgumentForm';
