@@ -1,5 +1,8 @@
+"use client"; 
+
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useState, useEffect } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { getSession, submitArgument, getJudgement, submitAppeal, inviteUser, updateUsername } from '../../../../utils/api';
 import ArgumentForm from '../../../../../components/ArgumentForm';
 import ArgumentList from '../../../../../components/ArgumentList';
@@ -10,7 +13,8 @@ import AppealForm from '../../../../../components/AppealForm';
 import UsernameForm from '../../../../../components/UsernameForm';
 
 export default function Session() {
-  const router = useRouter();
+  const pathname = usePathname(); // Get pathname
+  const searchParams = useSearchParams(); // Get search params
   const { id } = router.query;
   const [session, setSession] = useState(null);
   const [messages, setMessages] = useState([]);
