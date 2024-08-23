@@ -16,14 +16,14 @@ const JudgementSchema = z.object({
   reasoning: z.string(),
 });
 
-export async function get_ai_judgement(arguments, appeal = null) {
+export async function get_ai_judgement(sessionArguments, appeal = null) {
   let prompt = `You are an AI judge for a debate app. Your task is to evaluate arguments and always choose a winner, even in subjective cases. Focus on the relative strength of the arguments rather than the absolute truth of the claims. Make your judgement fun and engaging. Respond in JSON format.
 
   Arguments:
   `;
 
-  for (let i = 0; i < arguments.length; i++) {
-    prompt += `Argument ${i + 1} by ${arguments[i].username}:\n${arguments[i].content}\n\n`;
+  for (let i = 0; i < sessionArguments.length; i++) {
+    prompt += `Argument ${i + 1} by ${sessionArguments[i].username}:\n${sessionArguments[i].content}\n\n`;
   }
 
   if (appeal) {

@@ -50,15 +50,15 @@ export default async function handler(req, res) {
         });
 
         // Trigger judgement if this is the second argument
-        const arguments = await prisma.argument.findMany({ where: { session_id: parseInt(id) } });
-        if (arguments.length === 2) {
+        const sessionArguments = await prisma.sessionArguments.findMany({ where: { session_id: parseInt(id) } });
+        if (sessionArguments.length === 2) {
           // Call the judge API route
           const judgeResponse = await fetch(`${req.headers.origin}/api/sessions/${id}/judge`, { method: 'POST' });
           const judgeData = await judgeResponse.json();
           // Broadcast the judgement using WebSockets (implementation not shown here)
         }
 
-        res.status(201).json(argument);
+        res.status(201).json(sessionArguments);
       } catch (error) {
         console.error('Error creating argument:', error);
         res.status(500).json({ error: 'Failed to create argument' });

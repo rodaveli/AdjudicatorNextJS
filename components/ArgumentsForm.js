@@ -6,7 +6,7 @@ export default function ArgumentForm({ onSubmit }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    onSubmit(argument, imageFile);
+    onSubmit(sessionArguments, imageFile);
     setArgument('');
     setImageFile(null);
   };
@@ -15,7 +15,7 @@ export default function ArgumentForm({ onSubmit }) {
     <form onSubmit={handleSubmit}>
       <div>
         <label htmlFor="argument">Your Argument:</label>
-        <textarea id="argument" value={argument} onChange={(e) => setArgument(e.target.value)} required />
+        <textarea id="argument" value={sessionArguments} onChange={(e) => setArgument(e.target.value)} required />
       </div>
       <div>
         <label htmlFor="image">Upload Image (optional):</label>

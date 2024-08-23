@@ -86,9 +86,9 @@ export default function Session() {
     }
   }, [id, session, currentUser]);
 
-  const handleArgumentSubmit = async (argument, imageFile) => {
+  const handleArgumentSubmit = async (sessionArguments, imageFile) => {
     try {
-      await submitArgument(id, argument, imageFile);
+      await submitArgument(id, sessionArguments, imageFile);
       addMessage(`${session[`${currentUser}_name`]} submitted an argument`);
     } catch (error) {
       console.error('Error submitting argument:', error);
@@ -152,7 +152,7 @@ export default function Session() {
 
       <ChatBox messages={messages} />
       <InviteForm onSubmit={handleInviteUser} />
-      <ArgumentList arguments={session.arguments} />
+      <ArgumentList sessionArguments={session.sessionArguments} />
       {canSubmitArgument && <ArgumentForm onSubmit={handleArgumentSubmit} />}
       {canGetJudgement && <div>Waiting for Judgement...</div>}
     </main>

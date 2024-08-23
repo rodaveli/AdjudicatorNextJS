@@ -34,11 +34,11 @@ export default async function handler(req, res) {
         },
       });
 
-      const arguments = await prisma.argument.findMany({
+      const sessionArguments = await prisma.argument.findMany({
         where: { session_id: parseInt(id) },
       });
 
-      const appeal_judgement_data = await get_ai_judgement(arguments, appeal);
+      const appeal_judgement_data = await get_ai_judgement(sessionArguments, appeal);
 
       const appeal_judgement = await prisma.appealJudgement.create({
         data: {
