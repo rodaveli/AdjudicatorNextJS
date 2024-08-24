@@ -11,60 +11,58 @@ datasource db {
 }
 
 model Session {
-  id              Int             @id @default(autoincrement())
-  name            String
-  description     String?
-  user1_id        String?
-  user2_id        String?
-  user1_name      String?
-  user2_name      String?
-  arguments       Argument[]
-  judgement       Judgement?       @relation(fields: [judgement_id], references: [id])
-  judgement_id    Int?
-  appeal_judgement AppealJudgement? @relation(fields: [appeal_judgement_id], references: [id])
-  appeal_judgement_id Int?
-  appeals         Appeal[]
+  id               Int              @id @default(autoincrement())
+  name             String
+  description      String?
+  user1_id         String?
+  user2_id         String?
+  user1_name       String?
+  user2_name       String?
+  arguments        Argument[]
+  judgement        Judgement?
+  appeal_judgement AppealJudgement?
+  appeals          Appeal[]
 }
 
 model Argument {
-  id         Int      @id @default(autoincrement())
+  id         Int     @id @default(autoincrement())
   content    String
   user_id    String
-  username    String
+  username   String
   image_url  String?
   session_id Int
-  session    Session  @relation(fields: [session_id], references: [id])
+  session    Session @relation(fields: [session_id], references: [id])
 }
 
 model Judgement {
-  id              Int      @id @default(autoincrement())
-  content         String
-  winner          String
+  id               Int     @id @default(autoincrement())
+  content          String
+  winner           String
   winning_argument String
-  winning_user_id String
-  loser           String
+  winning_user_id  String
+  loser            String
   losing_argument  String
-  losing_user_id  String
+  losing_user_id   String
   reasoning        String
-  session_id      Int
-  session         Session  @relation(fields: [session_id], references: [id])
+  session_id       Int     @unique
+  session          Session @relation(fields: [session_id], references: [id])
 }
 
 model Appeal {
-  id         Int      @id @default(autoincrement())
+  id         Int     @id @default(autoincrement())
   content    String
   session_id Int
-  session    Session  @relation(fields: [session_id], references: [id])
+  session    Session @relation(fields: [session_id], references: [id])
 }
 
 model AppealJudgement {
-  id              Int      @id @default(autoincrement())
-  content         String
-  winner          String
+  id               Int     @id @default(autoincrement())
+  content          String
+  winner           String
   winning_argument String
-  loser           String
+  loser            String
   losing_argument  String
   reasoning        String
-  session_id      Int
-  session         Session  @relation(fields: [session_id], references: [id])
+  session_id       Int     @unique
+  session          Session @relation(fields: [session_id], references: [id])
 }
