@@ -192,7 +192,7 @@ export default function Session() {
 
       <ChatBox messages={messages} />
       <InviteForm onSubmit={handleInviteUser} />
-      <ArgumentList arguments={session.arguments} />
+      <ArgumentList sessionArguments={session.arguments} />
       {canSubmitArgument && <ArgumentForm onSubmit={handleArgumentSubmit} />}
       {canGetJudgement && <div>Waiting for Judgement...</div>}
     </main>
