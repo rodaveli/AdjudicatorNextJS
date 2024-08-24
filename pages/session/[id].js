@@ -7,6 +7,7 @@ import {
   submitAppeal,
   inviteUser,
   updateUsername,
+  joinSession,
 } from "../../utils/api";
 import ArgumentForm from "../../components/ArgumentForm";
 import ArgumentList from "../../components/ArgumentList";
@@ -25,6 +26,8 @@ export default function Session() {
   const [userId, setUserId] = useState(null);
   const [socket, setSocket] = useState(null);
 
+  const inviteLink = `${process.env.NEXT_PUBLIC_BASE_URL}/session/${id}`;
+
   useEffect(() => {
     const fetchSession = async () => {
       if (router.isReady && id) {
@@ -42,7 +45,7 @@ export default function Session() {
           }
         } catch (error) {
           console.error("Error fetching session:", error);
-          // Handle the error (e.g., show an error message)
+          alert("Failed to fetch session. Please try again.");
         }
       }
     };
@@ -71,11 +74,9 @@ export default function Session() {
       newSocket.onopen = () => console.log("WebSocket connection opened");
       newSocket.onclose = (event) => {
         console.log("WebSocket connection closed", event);
-        // Implement reconnection logic if needed
       };
       newSocket.onerror = (error) => {
         console.error("WebSocket error:", error);
-        // Handle the error (e.g., show a message to the user)
       };
       newSocket.onmessage = (event) => {
         try {
@@ -155,6 +156,18 @@ export default function Session() {
     }
   };
 
+  const handleJoinSession = async () => {
+    if (!session.user2_id) {
+      try {
+        const updatedSession = await joinSession(id, userId);
+        setSession(updatedSession);
+      } catch (error) {
+        console.error("Error joining session:", error);
+        alert("Failed to join session. Please try again.");
+      }
+    }
+  };
+
   const addMessage = (content) => {
     setMessages((prevMessages) => [
       ...prevMessages,
@@ -179,10 +192,16 @@ export default function Session() {
       <h1>{session.name}</h1>
       <p>{session.description}</p>
 
-      <UsernameForm
-        currentUsername={session[`${currentUser}_name`]}
-        onSubmit={handleUsernameUpdate}
-      />
+      {!currentUser && (
+        <button onClick={handleJoinSession}>Join Session</button>
+      )}
+
+      {currentUser && (
+        <UsernameForm
+          currentUsername={session[`${currentUser}_name`]}
+          onSubmit={handleUsernameUpdate}
+        />
+      )}
 
       {session.judgement && <Judgement judgement={session.judgement} />}
       {canAppeal && <AppealForm onSubmit={handleAppealSubmit} />}
@@ -191,7 +210,7 @@ export default function Session() {
       )}
 
       <ChatBox messages={messages} />
-      <InviteForm onSubmit={handleInviteUser} />
+      <InviteForm onEmailSubmit={handleInviteUser} inviteLink={inviteLink} />
       <ArgumentList sessionArguments={session.arguments} />
       {canSubmitArgument && <ArgumentForm onSubmit={handleArgumentSubmit} />}
       {canGetJudgement && <div>Waiting for Judgement...</div>}

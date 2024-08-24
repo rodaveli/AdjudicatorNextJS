@@ -44,6 +44,23 @@ export const getSession = async (id) => {
   }
 };
 
+export const joinSession = async (sessionId, userId) => {
+  const response = await fetch(`/api/sessions/${sessionId}/join`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ userId }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.error || `HTTP error! status: ${response.status}`,
+    );
+  }
+  return response.json();
+};
+
 export const submitArgument = async (sessionId, content, imageFile) => {
   const formData = new FormData();
   formData.append("content", content);
