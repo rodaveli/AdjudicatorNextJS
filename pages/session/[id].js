@@ -64,7 +64,9 @@ export default function Session() {
 
   useEffect(() => {
     if (id) {
-      const newSocket = new WebSocket(`ws://localhost:8000/ws/${id}`);
+      const newSocket = new WebSocket(
+        `wss://${window.location.host}/api/socketio`,
+      );
 
       newSocket.onopen = () => console.log("WebSocket connection opened");
       newSocket.onclose = (event) => {

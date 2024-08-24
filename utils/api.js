@@ -13,9 +13,17 @@ export const createSession = async (name, description) => {
 };
 
 export const getSession = async (id) => {
-  const userId = localStorage.getItem("userId");
-  const response = await fetch(`/api/sessions/${id}?userId=${userId}`);
-  return response.json();
+  const userId = localStorage.getItem("userId") || "anonymous";
+  try {
+    const response = await fetch(`/api/sessions/${id}?userId=${userId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching session:", error);
+    throw error;
+  }
 };
 
 export const submitArgument = async (sessionId, content, imageFile) => {
