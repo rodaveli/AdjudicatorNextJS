@@ -1,10 +1,16 @@
 export const createSession = async (name, description) => {
+  let userId = localStorage.getItem("userId");
+  if (!userId) {
+    userId = `user_${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem("userId", userId);
+  }
+
   const response = await fetch(`/api/sessions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name, description }),
+    body: JSON.stringify({ name, description, userId }),
   });
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);

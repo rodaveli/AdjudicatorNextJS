@@ -17,7 +17,7 @@ export default function Home() {
       router.push(`/session/${newSession.id}`);
     } catch (error) {
       console.error("Error creating session:", error);
-      alert("Failed to create session. Please try again.");
+      alert(`Failed to create session: ${error.message}`);
     }
   };
 
