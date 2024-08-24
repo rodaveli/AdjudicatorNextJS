@@ -13,11 +13,17 @@ export const createSession = async (name, description) => {
 };
 
 export const getSession = async (id) => {
-  const userId = localStorage.getItem("userId") || "anonymous";
+  const userId = localStorage.getItem("userId");
+  if (!userId) {
+    throw new Error("User ID not found in local storage");
+  }
   try {
     const response = await fetch(`/api/sessions/${id}?userId=${userId}`);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error || `HTTP error! status: ${response.status}`,
+      );
     }
     return response.json();
   } catch (error) {
