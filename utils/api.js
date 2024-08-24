@@ -25,13 +25,19 @@ export const getSession = async (id) => {
   }
   try {
     const response = await fetch(`/api/sessions/${id}?userId=${userId}`);
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch (parseError) {
+      console.error("Error parsing JSON:", parseError);
+      throw new Error(`Failed to parse response: ${response.statusText}`);
+    }
     if (!response.ok) {
-      const errorData = await response.json();
       throw new Error(
         errorData.error || `HTTP error! status: ${response.status}`,
       );
     }
-    return response.json();
+    return errorData;
   } catch (error) {
     console.error("Error fetching session:", error);
     throw error;
