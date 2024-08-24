@@ -1,3 +1,5 @@
+import prisma from "../../../utils/db";
+
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
@@ -18,7 +20,9 @@ export default async function handler(req, res) {
       res.status(201).json(session);
     } catch (error) {
       console.error("Error creating session:", error);
-      res.status(500).json({ error: "Failed to create session" });
+      res
+        .status(500)
+        .json({ error: "Failed to create session: " + error.message });
     }
   } else {
     res.setHeader("Allow", ["POST"]);
