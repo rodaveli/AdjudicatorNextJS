@@ -11,7 +11,9 @@ export default function Home() {
   const handleCreateSession = async (event) => {
     event.preventDefault();
     try {
+      console.log("Creating session...");
       const newSession = await createSession(sessionName, sessionDescription);
+      console.log("Session created:", newSession);
       router.push(`/session/${newSession.id}`);
     } catch (error) {
       console.error("Error creating session:", error);
