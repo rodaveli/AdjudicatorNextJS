@@ -1,209 +1,38 @@
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import {
-  getSession,
-  submitArgument,
-  getJudgement,
-  submitAppeal,
-  inviteUser,
-  updateUsername,
-  joinSession,
-} from "../../utils/api";
-import ArgumentForm from "../../components/ArgumentForm";
-import ArgumentList from "../../components/ArgumentList";
-import ChatBox from "../../components/ChatBox";
-import InviteForm from "../../components/InviteForm";
-import Judgement from "../../components/Judgement";
-import AppealForm from "../../components/AppealForm";
-import UsernameForm from "../../components/UsernameForm";
+import prisma from "../../../utils/db";
 
-export default function Session() {
-  const router = useRouter();
-  const { id } = router.query;
-  const [session, setSession] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [eventSource, setEventSource] = useState(null);
+export default async function handler(req, res) {
+  const { id } = req.query;
+  const { userId } = req.query;
 
-  const inviteLink = `${process.env.NEXT_PUBLIC_BASE_URL}/session/${id}`;
+  if (req.method === "GET") {
+    try {
+      const session = await prisma.session.findUnique({
+        where: { id: parseInt(id) },
+        include: {
+          arguments: true,
+          judgement: true,
+          appeal_judgement: true,
+        },
+      });
 
-  useEffect(() => {
-    const fetchSession = async () => {
-      if (router.isReady && id) {
-        try {
-          const sessionData = await getSession(id);
-          setSession(sessionData);
-
-          const storedUserId = localStorage.getItem("userId");
-          if (storedUserId) {
-            setUserId(storedUserId);
-          } else {
-            const newUserId = `user_${Math.random().toString(36).substr(2, 9)}`;
-            localStorage.setItem("userId", newUserId);
-            setUserId(newUserId);
-          }
-        } catch (error) {
-          console.error("Error fetching session:", error);
-          alert("Failed to fetch session. Please try again.");
-        }
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
       }
-    };
-
-    fetchSession();
-  }, [router.isReady, id]);
-
-  useEffect(() => {
-    if (session && userId) {
-      setCurrentUser(
-        userId === session.user1_id
-          ? "user1"
-          : userId === session.user2_id
-            ? "user2"
-            : null,
-      );
-    }
-  }, [session, userId]);
-
-  useEffect(() => {
-    if (id) {
-      const newEventSource = new EventSource(`/api/events?sessionId=${id}`);
-
-      newEventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        console.log("Received SSE message:", data);
-        handleServerEvent(data);
-      };
-
-      newEventSource.onerror = (error) => {
-        console.error("SSE error:", error);
-        newEventSource.close();
-      };
-
-      setEventSource(newEventSource);
-
-      return () => {
-        if (newEventSource) {
-          newEventSource.close();
-        }
-      };
-    }
-  }, [id]);
-
-  const handleServerEvent = (data) => {
-    if (data.type === "newArgument") {
-      addMessage(`${data.username} submitted an argument`);
-      setSession((prevSession) => ({
-        ...prevSession,
-        arguments: [...(prevSession.arguments || []), data.argument],
-      }));
-    } else if (data.type === "judgementReady") {
-      setSession((prevSession) => ({
-        ...prevSession,
-        judgement: data.judgement,
-      }));
-      addMessage(`Judgement received: ${data.judgement.winner} wins!`);
-    }
-  };
-
-  const handleArgumentSubmit = async (argument, imageFile) => {
-    try {
-      await submitArgument(id, argument, imageFile);
-      addMessage(`${session[`${currentUser}_name`]} submitted an argument`);
-    } catch (error) {
-      console.error("Error submitting argument:", error);
-      alert("Failed to submit argument. Please try again.");
-    }
-  };
-
-  const handleAppealSubmit = async (appealContent) => {
-    try {
-      await submitAppeal(id, appealContent);
-      addMessage(`${session[`${currentUser}_name`]} submitted an appeal`);
-    } catch (error) {
-      console.error("Error submitting appeal:", error);
-      alert("Failed to submit appeal. Please try again.");
-    }
-  };
-
-  const handleInviteUser = async (email) => {
-    try {
-      await inviteUser(id, email);
-      alert("User invited successfully!");
-    } catch (error) {
-      console.error("Error inviting user:", error);
-      alert("Failed to invite user. Please try again.");
-    }
-  };
-
-  const handleUsernameUpdate = async (username) => {
-    try {
-      const updatedSession = await updateUsername(id, currentUser, username);
-      setSession(updatedSession);
-    } catch (error) {
-      console.error("Error updating username:", error);
-      alert("Failed to update username. Please try again.");
-    }
-  };
-
-  const handleJoinSession = async () => {
-    if (!session.user2_id) {
-      try {
-        const updatedSession = await joinSession(id, userId);
-        setSession(updatedSession);
-      } catch (error) {
-        console.error("Error joining session:", error);
-        alert("Failed to join session. Please try again.");
+      // Check if the user is part of the session
+      if (session.user1_id !== userId && session.user2_id !== userId) {
+        return res
+          .status(403)
+          .json({ error: "User not authorized for this session" });
       }
+      res.status(200).json(session);
+    } catch (error) {
+      console.error("Error fetching session:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to fetch session: " + error.message });
     }
-  };
-
-  const addMessage = (content) => {
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { content, timestamp: new Date() },
-    ]);
-  };
-
-  const canSubmitArgument = session?.arguments && session.arguments.length < 2;
-  const canGetJudgement =
-    session?.arguments && session.arguments.length === 2 && !session?.judgement;
-  const canAppeal =
-    session?.judgement &&
-    session.judgement.loser === session[`${currentUser}_name`] &&
-    !session.appeal_judgement;
-
-  if (!session) {
-    return <div>Loading...</div>;
+  } else {
+    res.setHeader("Allow", ["GET"]);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
-
-  return (
-    <main>
-      <h1>{session.name}</h1>
-      <p>{session.description}</p>
-
-      {!currentUser && (
-        <button onClick={handleJoinSession}>Join Session</button>
-      )}
-
-      {currentUser && (
-        <UsernameForm
-          currentUsername={session[`${currentUser}_name`]}
-          onSubmit={handleUsernameUpdate}
-        />
-      )}
-
-      {session.judgement && <Judgement judgement={session.judgement} />}
-      {canAppeal && <AppealForm onSubmit={handleAppealSubmit} />}
-      {session.appeal_judgement && (
-        <Judgement judgement={session.appeal_judgement} />
-      )}
-
-      <ChatBox messages={messages} />
-      <InviteForm onEmailSubmit={handleInviteUser} inviteLink={inviteLink} />
-      <ArgumentList sessionArguments={session.arguments} />
-      {canSubmitArgument && <ArgumentForm onSubmit={handleArgumentSubmit} />}
-      {canGetJudgement && <div>Waiting for Judgement...</div>}
-    </main>
-  );
 }

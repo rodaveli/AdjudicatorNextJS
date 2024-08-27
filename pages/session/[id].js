@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import {
   getSession,
   submitArgument,
-  getJudgement,
   submitAppeal,
   inviteUser,
   updateUsername,
@@ -24,7 +23,7 @@ export default function Session() {
   const [messages, setMessages] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [userId, setUserId] = useState(null);
-  const [socket, setSocket] = useState(null);
+  const [eventSource, setEventSource] = useState(null);
 
   const inviteLink = `${process.env.NEXT_PUBLIC_BASE_URL}/session/${id}`;
 
@@ -66,55 +65,45 @@ export default function Session() {
   }, [session, userId]);
 
   useEffect(() => {
-    if (id) {
-      const newSocket = new WebSocket(
-        `wss://${window.location.host}/api/socketio`,
-      );
+    if (id && !eventSource) {
+      const newEventSource = new EventSource(`/api/events?sessionId=${id}`);
 
-      newSocket.onopen = () => console.log("WebSocket connection opened");
-      newSocket.onclose = (event) => {
-        console.log("WebSocket connection closed", event);
-      };
-      newSocket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-      };
-      newSocket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log("Received WebSocket message:", data);
-          if (data.message === "New argument submitted") {
-            addMessage(
-              `${session[`${currentUser}_name`]} submitted an argument`,
-            );
-            if (data.argumentCount === 2) {
-              addMessage("Both arguments submitted. Waiting for judgement...");
-            }
-            setSession((prevSession) => ({
-              ...prevSession,
-              arguments: [...(prevSession.arguments || []), data.argument],
-            }));
-          } else if (data.message === "Judgement ready") {
-            console.log("Received judgement:", data.judgement);
-            setSession((prevSession) => ({
-              ...prevSession,
-              judgement: data.judgement,
-            }));
-            addMessage(`Judgement received: ${data.judgement.winner} wins!`);
-          }
-        } catch (error) {
-          console.error("Error processing WebSocket message:", error);
-        }
+      newEventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log("Received SSE message:", data);
+        handleServerEvent(data);
       };
 
-      setSocket(newSocket);
+      newEventSource.onerror = (error) => {
+        console.error("SSE error:", error);
+        newEventSource.close();
+      };
+
+      setEventSource(newEventSource);
 
       return () => {
-        if (newSocket && newSocket.readyState === WebSocket.OPEN) {
-          newSocket.close();
+        if (newEventSource) {
+          newEventSource.close();
         }
       };
     }
-  }, [id, session, currentUser]);
+  }, [id, eventSource, handleServerEvent]);
+
+  const handleServerEvent = useCallback((data) => {
+    if (data.type === "newArgument") {
+      addMessage(`${data.username} submitted an argument`);
+      setSession((prevSession) => ({
+        ...prevSession,
+        arguments: [...(prevSession.arguments || []), data.argument],
+      }));
+    } else if (data.type === "judgementReady") {
+      setSession((prevSession) => ({
+        ...prevSession,
+        judgement: data.judgement,
+      }));
+      addMessage(`Judgement received: ${data.judgement.winner} wins!`);
+    }
+  }, []);
 
   const handleArgumentSubmit = async (argument, imageFile) => {
     try {
