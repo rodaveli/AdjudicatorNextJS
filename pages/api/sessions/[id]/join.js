@@ -14,7 +14,18 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: "Session not found" });
       }
 
+      if (session.user1_id === userId) {
+        return res
+          .status(400)
+          .json({ error: "You are already in this session" });
+      }
+
       if (session.user2_id) {
+        if (session.user2_id === userId) {
+          return res
+            .status(400)
+            .json({ error: "You are already in this session" });
+        }
         return res.status(400).json({ error: "Session is full" });
       }
 

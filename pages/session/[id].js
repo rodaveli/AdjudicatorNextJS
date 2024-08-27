@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import {
   getSession,
@@ -19,6 +19,7 @@ import UsernameForm from "../../components/UsernameForm";
 
 // Add this line to ensure _ is defined if it's being used
 const _ = require("lodash");
+
 export default function Session() {
   const router = useRouter();
   const { id } = router.query;
@@ -28,6 +29,7 @@ export default function Session() {
   const [userId, setUserId] = useState(null);
   const [sessionStatus, setSessionStatus] = useState("waiting");
   const [eventSource, setEventSource] = useState(null);
+  const [isJoining, setIsJoining] = useState(false);
 
   const inviteLink = `${process.env.NEXT_PUBLIC_BASE_URL}/session/${id}`;
 
@@ -61,6 +63,11 @@ export default function Session() {
             const newUserId = `user_${Math.random().toString(36).substr(2, 9)}`;
             localStorage.setItem("userId", newUserId);
             setUserId(newUserId);
+          }
+
+          // Check if the user needs to join the session
+          if (sessionData.user1_id !== storedUserId && !sessionData.user2_id) {
+            setIsJoining(true);
           }
         } catch (error) {
           console.error("Error fetching session:", error);
@@ -107,7 +114,7 @@ export default function Session() {
         }
       };
     }
-  }, [id, eventSource, handleServerEvent]);
+  }, [id, eventSource]);
 
   const handleServerEvent = useCallback((data) => {
     if (data.type === "newArgument") {
@@ -166,14 +173,13 @@ export default function Session() {
   };
 
   const handleJoinSession = async () => {
-    if (!session.user2_id) {
-      try {
-        const updatedSession = await joinSession(id, userId);
-        setSession(updatedSession);
-      } catch (error) {
-        console.error("Error joining session:", error);
-        alert("Failed to join session. Please try again.");
-      }
+    try {
+      const updatedSession = await joinSession(id, userId);
+      setSession(updatedSession);
+      setIsJoining(false);
+    } catch (error) {
+      console.error("Error joining session:", error);
+      alert("Failed to join session. Please try again.");
     }
   };
 
@@ -201,8 +207,14 @@ export default function Session() {
       <h1>{session.name}</h1>
       <p>{session.description}</p>
 
-      {!currentUser && (
-        <button onClick={handleJoinSession}>Join Session</button>
+      {isJoining && (
+        <div>
+          <p>
+            You've been invited to join this debate session. Would you like to
+            join?
+          </p>
+          <button onClick={handleJoinSession}>Join Session</button>
+        </div>
       )}
 
       {currentUser && (
@@ -212,17 +224,33 @@ export default function Session() {
         />
       )}
 
-      {session.judgement && <Judgement judgement={session.judgement} />}
-      {canAppeal && <AppealForm onSubmit={handleAppealSubmit} />}
-      {session.appeal_judgement && (
+      {sessionStatus === "waiting" && (
+        <InviteForm onEmailSubmit={handleInviteUser} inviteLink={inviteLink} />
+      )}
+
+      {sessionStatus === "arguing" && (
+        <>
+          <ArgumentList sessionArguments={session.arguments} />
+          {canSubmitArgument && (
+            <ArgumentForm onSubmit={handleArgumentSubmit} />
+          )}
+        </>
+      )}
+
+      {sessionStatus === "judging" && <div>Waiting for Judgement...</div>}
+
+      {(sessionStatus === "appealing" || sessionStatus === "completed") && (
+        <>
+          <Judgement judgement={session.judgement} />
+          {canAppeal && <AppealForm onSubmit={handleAppealSubmit} />}
+        </>
+      )}
+
+      {sessionStatus === "completed" && session.appeal_judgement && (
         <Judgement judgement={session.appeal_judgement} />
       )}
 
       <ChatBox messages={messages} />
-      <InviteForm onEmailSubmit={handleInviteUser} inviteLink={inviteLink} />
-      <ArgumentList sessionArguments={session.arguments} />
-      {canSubmitArgument && <ArgumentForm onSubmit={handleArgumentSubmit} />}
-      {canGetJudgement && <div>Waiting for Judgement...</div>}
     </main>
   );
 }
