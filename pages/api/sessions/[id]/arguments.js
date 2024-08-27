@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
-import formidable from 'formidable';
-import fs from 'fs';
-import { v4 as uuidv4 } from 'uuid';
+import { PrismaClient } from "@prisma/client";
+import formidable from "formidable";
+import fs from "fs";
+import { v4 as uuidv4 } from "uuid";
 
 const prisma = new PrismaClient();
 
@@ -14,13 +14,13 @@ export const config = {
 export default async function handler(req, res) {
   const { id } = req.query;
 
-  if (req.method === 'POST') {
+  if (req.method === "POST") {
     const form = formidable({ multiples: true });
 
     form.parse(req, async (err, fields, files) => {
       if (err) {
-        console.error('Error parsing form data:', err);
-        return res.status(500).json({ error: 'Failed to parse form data' });
+        console.error("Error parsing form data:", err);
+        return res.status(500).json({ error: "Failed to parse form data" });
       }
 
       try {
@@ -28,15 +28,9 @@ export default async function handler(req, res) {
         let image_url = null;
 
         if (files.image) {
-          const fileExtension = files.image.originalFilename.split('.').pop();
-          const imageName = `${uuidv4()}.${fileExtension}`;
-          const imagePath = `/tmp/${imageName}`; // Store temporarily
-
-          await fs.promises.writeFile(imagePath, fs.readFileSync(files.image.filepath));
-
-          // TODO: Implement actual image uploading to your storage (e.g., Cloudinary, S3)
-          // and replace the placeholder below with the actual URL.
-          image_url = `/images/${imageName}`; // Placeholder
+          // TODO: Implement image upload logic here
+          // For now, we'll just use a placeholder URL
+          image_url = "https://example.com/placeholder-image.jpg";
         }
 
         const argument = await prisma.argument.create({
@@ -49,19 +43,26 @@ export default async function handler(req, res) {
           },
         });
 
-        // Trigger judgement if this is the second argument
-        const sessionArguments = await prisma.sessionArguments.findMany({ where: { session_id: parseInt(id) } });
-        if (sessionArguments.length === 2) {
-          // Call the judge API route
-          const judgeResponse = await fetch(`${req.headers.origin}/api/sessions/${id}/judge`, { method: 'POST' });
-          const judgeData = await judgeResponse.json();
-          // Broadcast the judgement using WebSockets (implementation not shown here)
+        // Send event for new argument
+        const eventRes = await fetch(`${process.env.VERCEL_URL}/api/events`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "newArgument",
+            sessionId: id,
+            argument,
+            username,
+          }),
+        });
+
+        if (!eventRes.ok) {
+          console.error("Failed to send event");
         }
 
-        res.status(201).json(sessionArguments);
+        res.status(201).json(argument);
       } catch (error) {
-        console.error('Error creating argument:', error);
-        res.status(500).json({ error: 'Failed to create argument' });
+        console.error("Error creating argument:", error);
+        res.status(500).json({ error: "Failed to create argument" });
       }
     });
   } else {

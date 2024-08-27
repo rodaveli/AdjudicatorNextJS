@@ -1,12 +1,12 @@
-import { PrismaClient } from '@prisma/client';
-import { get_ai_judgement } from '../../../../utils/ai_judge';
+import { PrismaClient } from "@prisma/client";
+import { get_ai_judgement } from "../../../../utils/ai_judge";
 
 const prisma = new PrismaClient();
 
 export default async function handler(req, res) {
   const { id } = req.query;
 
-  if (req.method === 'POST') {
+  if (req.method === "POST") {
     try {
       const { content, user_id } = req.body;
 
@@ -16,15 +16,19 @@ export default async function handler(req, res) {
       });
 
       if (!session) {
-        return res.status(404).json({ error: 'Session not found' });
+        return res.status(404).json({ error: "Session not found" });
       }
 
       if (!session.judgement) {
-        return res.status(400).json({ error: 'No judgement exists for this session yet' });
+        return res
+          .status(400)
+          .json({ error: "No judgement exists for this session yet" });
       }
 
-      if (user_id !== session.judgement.loser_user_id) { // Use loser_user_id instead of loser
-        return res.status(403).json({ error: 'Only the losing party can submit an appeal' });
+      if (user_id !== session.judgement.losing_user_id) {
+        return res
+          .status(403)
+          .json({ error: "Only the losing party can submit an appeal" });
       }
 
       const appeal = await prisma.appeal.create({
@@ -38,7 +42,10 @@ export default async function handler(req, res) {
         where: { session_id: parseInt(id) },
       });
 
-      const appeal_judgement_data = await get_ai_judgement(sessionArguments, appeal);
+      const appeal_judgement_data = await get_ai_judgement(
+        sessionArguments,
+        appeal,
+      );
 
       const appeal_judgement = await prisma.appealJudgement.create({
         data: {
@@ -53,10 +60,25 @@ export default async function handler(req, res) {
         data: { appeal_judgement_id: appeal_judgement.id },
       });
 
+      // Send event for appeal judgement ready
+      const eventRes = await fetch(`${process.env.VERCEL_URL}/api/events`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "appealJudgementReady",
+          sessionId: id,
+          appealJudgement: appeal_judgement,
+        }),
+      });
+
+      if (!eventRes.ok) {
+        console.error("Failed to send event");
+      }
+
       res.status(201).json(appeal);
     } catch (error) {
-      console.error('Error in create_appeal:', error);
-      res.status(500).json({ error: 'Failed to create appeal' });
+      console.error("Error in create_appeal:", error);
+      res.status(500).json({ error: "Failed to create appeal" });
     }
   } else {
     res.status(405).end(); // Method Not Allowed
