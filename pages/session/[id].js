@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import {
   getSession,
@@ -26,9 +26,26 @@ export default function Session() {
   const [messages, setMessages] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [sessionStatus, setSessionStatus] = useState("waiting");
   const [eventSource, setEventSource] = useState(null);
 
   const inviteLink = `${process.env.NEXT_PUBLIC_BASE_URL}/session/${id}`;
+
+  useEffect(() => {
+    if (session) {
+      if (!session.user2_id) {
+        setSessionStatus("waiting");
+      } else if (session.arguments.length < 2) {
+        setSessionStatus("arguing");
+      } else if (!session.judgement) {
+        setSessionStatus("judging");
+      } else if (!session.appeal_judgement) {
+        setSessionStatus("appealing");
+      } else {
+        setSessionStatus("completed");
+      }
+    }
+  }, [session]);
 
   useEffect(() => {
     const fetchSession = async () => {
