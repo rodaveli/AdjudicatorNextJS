@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import {
   getSession,
   submitArgument,
+  getJudgement,
   submitAppeal,
   inviteUser,
   updateUsername,
@@ -16,6 +17,8 @@ import Judgement from "../../components/Judgement";
 import AppealForm from "../../components/AppealForm";
 import UsernameForm from "../../components/UsernameForm";
 
+// Add this line to ensure _ is defined if it's being used
+const _ = require("lodash");
 export default function Session() {
   const router = useRouter();
   const { id } = router.query;

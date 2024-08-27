@@ -3,7 +3,6 @@ import prisma from "../../../utils/db";
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
-      console.log("Received session creation request:", req.body);
       const { name, description, userId } = req.body;
       if (!name) {
         return res.status(400).json({ error: "Session name is required" });
@@ -13,10 +12,9 @@ export default async function handler(req, res) {
           name,
           description,
           user1_id: userId,
-          user1_name: `User ${userId.substr(-4)}`, // Use last 4 characters of userId as name
+          user1_name: `User ${userId.substr(-4)}`,
         },
       });
-      console.log("Session created:", session);
       res.status(201).json(session);
     } catch (error) {
       console.error("Error creating session:", error);
