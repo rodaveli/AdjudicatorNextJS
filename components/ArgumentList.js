@@ -1,3 +1,4 @@
+import Image from "next/image";
 export default function ArgumentList({ sessionArguments }) {
   return (
     <section>
@@ -8,7 +9,13 @@ export default function ArgumentList({ sessionArguments }) {
             <h3>Argument by {argument.username}</h3>
             <p>{argument.content}</p>
             {argument.image_url && (
-              <img src={argument.image_url} alt="Argument image" />
+              <Image
+                src={argument.image_url}
+                alt="Argument image"
+                width={500}
+                height={300}
+                layout="responsive"
+              />
             )}
           </div>
         ))

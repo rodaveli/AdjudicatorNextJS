@@ -114,7 +114,7 @@ export default function Session() {
         }
       };
     }
-  }, [id, eventSource]);
+  }, [id, eventSource, handleServerEvent]);
 
   const handleServerEvent = useCallback((data) => {
     if (data.type === "newArgument") {
@@ -210,8 +210,8 @@ export default function Session() {
       {isJoining && (
         <div>
           <p>
-            You've been invited to join this debate session. Would you like to
-            join?
+            You&apos;ve been invited to join this debate session. Would you like
+            to join?
           </p>
           <button onClick={handleJoinSession}>Join Session</button>
         </div>
